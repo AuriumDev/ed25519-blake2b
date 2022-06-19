@@ -13,10 +13,13 @@ typedef unsigned char ed25519_secret_key[32];
 
 typedef unsigned char curved25519_key[32];
 
+typedef unsigned char hash_512bits[64];
+
 void ed25519_publickey_raw(hash_512bits extsk, ed25519_public_key pk);
 void ed25519_publickey(const ed25519_secret_key sk, ed25519_public_key pk);
 int ed25519_sign_open(const unsigned char *m, size_t mlen, const ed25519_public_key pk, const ed25519_signature RS);
 void ed25519_sign(const unsigned char *m, size_t mlen, const ed25519_secret_key sk, const ed25519_public_key pk, ed25519_signature RS);
+void ed25519_sign(const unsigned char *m, size_t mlen, hash_512bits extsk, const ed25519_public_key pk, ed25519_signature RS);
 
 int ed25519_sign_open_batch(const unsigned char **m, size_t *mlen, const unsigned char **pk, const unsigned char **RS, size_t num, int *valid);
 
