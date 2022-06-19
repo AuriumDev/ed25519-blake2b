@@ -42,6 +42,21 @@ ed25519_hram(hash_512bits hram, const ed25519_signature RS, const ed25519_public
 }
 
 void
+ED25519_FN(ed25519_publickey_raw) (hash_512bits extsk, ed25519_public_key pk) {
+	bignum256modm a;
+	ge25519 ALIGN(16) A;
+
+	extsk[0] &= 248;
+	extsk[31] &= 127;
+	extsk[31] |= 64;
+
+	/* A = aB */
+	expand256_modm(a, extsk, 32);
+	ge25519_scalarmult_base_niels(&A, ge25519_niels_base_multiples, a);
+	ge25519_pack(pk, &A);
+}
+
+void
 ED25519_FN(ed25519_publickey) (const ed25519_secret_key sk, ed25519_public_key pk) {
 	bignum256modm a;
 	ge25519 ALIGN(16) A;
@@ -54,6 +69,53 @@ ED25519_FN(ed25519_publickey) (const ed25519_secret_key sk, ed25519_public_key p
 	ge25519_pack(pk, &A);
 }
 
+void
+ED25519_FN(ed25519_sign_raw) (const unsigned char *m, size_t mlen, hash_512bits extsk, const ed25519_public_key pk, ed25519_signature RS) {
+	ed25519_hash_context ctx;
+	bignum256modm r, S, a;
+	ge25519 ALIGN(16) R;
+	hash_512bits hashr, hram;
+	unsigned char randr[32];
+	static const unsigned char rzero[64] = {0};
+	
+	extsk[0] &= 248;
+	extsk[31] &= 127;
+	extsk[31] |= 64;
+
+	/* r = H(aExt[32..63], randr[0..31], zero[0..63], m) */
+	ed25519_hash_init(&ctx);
+	ed25519_hash_update(&ctx, extsk + 32, 32);
+	ed25519_randombytes_unsafe(randr, 32);
+	ed25519_hash_update(&ctx, randr, 32);
+	/*
+	 * Pad the rest of the hash block (which is 128
+	 * bytes in size in our case) with zeros.
+	 * This puts the message (possibly known to a side
+	 * channel attacker) in a separate block.
+	 */
+	ed25519_hash_update(&ctx, rzero, 64);
+	ed25519_hash_update(&ctx, m, mlen);
+	ed25519_hash_final(&ctx, hashr);
+	expand256_modm(r, hashr, 64);
+
+	/* R = rB */
+	ge25519_scalarmult_base_niels(&R, ge25519_niels_base_multiples, r);
+	ge25519_pack(RS, &R);
+
+	/* S = H(R,A,m).. */
+	ed25519_hram(hram, RS, pk, m, mlen);
+	expand256_modm(S, hram, 64);
+
+	/* S = H(R,A,m)a */
+	expand256_modm(a, extsk, 32);
+	mul256_modm(S, S, a);
+
+	/* S = (r + H(R,A,m)a) */
+	add256_modm(S, S, r);
+
+	/* S = (r + H(R,A,m)a) mod L */
+	contract256_modm(RS + 32, S);
+}
 
 void
 ED25519_FN(ed25519_sign) (const unsigned char *m, size_t mlen, const ed25519_secret_key sk, const ed25519_public_key pk, ed25519_signature RS) {
