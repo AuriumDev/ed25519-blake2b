@@ -76,5 +76,6 @@ NAPI_INIT() {
   NAPI_EXPORT_FUNCTION(node_sign)
   NAPI_EXPORT_FUNCTION(node_verify)
   NAPI_EXPORT_FUNCTION(node_publickey)
+  NAPI_EXPORT_FUNCTION(node_publickey_raw)
   NAPI_EXPORT_FUNCTION(node_hash)
 }
