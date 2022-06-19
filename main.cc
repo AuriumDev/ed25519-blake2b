@@ -4,6 +4,15 @@
 #include "ed25519-donna/ed25519.h"
 #include "blake2/blake2.h"
 
+NAPI_METHOD(node_publickey_raw) {
+  NAPI_ARGV(2)
+  NAPI_ARGV_BUFFER_CAST(unsigned char *, secret_key, 0)
+  NAPI_ARGV_BUFFER_CAST(unsigned char *, public_key, 1)
+
+  ed25519_publickey_raw(secret_key, public_key);
+  return NULL;
+}
+
 NAPI_METHOD(node_publickey) {
   NAPI_ARGV(2)
   NAPI_ARGV_BUFFER_CAST(unsigned char *, secret_key, 0)
