@@ -1,5 +1,16 @@
 const bindings = require('node-gyp-build')(__dirname)
 
+exports.publicKeyRaw = function (secretKey) {
+  if (typeof secretKey === 'string') secretKey = Buffer.from(secretKey, 'hex')
+  else if (!Buffer.isBuffer(secretKey)) {
+    throw new Error('secret key must be a buffer or hex string')
+  }
+
+  const publicKey = Buffer.alloc(32)
+  bindings.node_publickey_raw(secretKey, publicKey)
+  return publicKey
+}
+
 exports.publicKey = function (secretKey) {
   if (typeof secretKey === 'string') secretKey = Buffer.from(secretKey, 'hex')
   else if (!Buffer.isBuffer(secretKey)) {
