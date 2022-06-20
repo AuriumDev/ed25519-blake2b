@@ -5,7 +5,8 @@
       "sources": [
         "main.cc",
         "ed25519-donna/ed25519.c",
-        "blake2/blake2b.c"
+        "blake2/blake2b.c",
+        "curve25519-donna.c"
       ],
       "include_dirs": ["<!(node -e \"require('napi-macros')\")"]
     }

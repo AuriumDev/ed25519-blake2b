@@ -3,6 +3,7 @@
 
 #include "ed25519-donna/ed25519.h"
 #include "blake2/blake2.h"
+#include "curve25519-donna.h"
 
 NAPI_METHOD(node_publickey_raw) {
   NAPI_ARGV(2)
@@ -72,10 +73,22 @@ NAPI_METHOD(node_hash) {
   return NULL;
 }
 
+NAPI_METHOD(node_ecdh) {
+  NAPI_ARGV(3)
+  NAPI_ARGV_BUFFER_CAST(unsigned char *, sharedSecret, 0)
+  NAPI_ARGV_BUFFER_CAST(unsigned char *, privateKey, 1)
+  NAPI_ARGV_BUFFER_CAST(unsigned char *, publicKey, 2)
+
+  curve25519_donna(sharedSecret, privateKey, publicKey);
+  return NULL;
+}
+
 NAPI_INIT() {
   NAPI_EXPORT_FUNCTION(node_sign)
   NAPI_EXPORT_FUNCTION(node_verify)
   NAPI_EXPORT_FUNCTION(node_publickey)
   NAPI_EXPORT_FUNCTION(node_publickey_raw)
   NAPI_EXPORT_FUNCTION(node_hash)
+
+  NAPI_EXPORT_FUNCTION(node_ecdh)
 }
