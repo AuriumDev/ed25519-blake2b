@@ -3,7 +3,7 @@
 
 #include "ed25519-donna/ed25519.h"
 #include "blake2/blake2.h"
-#include "curve25519-donna/curve25519.h"
+#include "curve25519-donna.h"
 
 NAPI_METHOD(node_publickey_raw) {
   NAPI_ARGV(2)
