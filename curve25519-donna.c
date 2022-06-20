@@ -273,16 +273,6 @@ div_by_2_25(const limb v)
   return (v + roundoff) >> 25;
 }
 
-/* return v / (2^25), using only shifts and adds.
- *
- * On entry: v can take any value. */
-static inline s32
-div_s32_by_2_25(const s32 v)
-{
-   const s32 roundoff = ((uint32_t)(v >> 31)) >> 7;
-   return (v + roundoff) >> 25;
-}
-
 /* Reduce all coefficients of the short form input so that |x| < 2^26.
  *
  * On entry: |output[i]| < 280*2^54 */
@@ -850,15 +840,16 @@ crecip(limb *out, const limb *z) {
   /* 2^255 - 21 */ fmul(out,t1,z11);
 }
 
-int curve25519_donna(unsigned char *mypublic, const unsigned char *secret, const unsigned char *basepoint) {
+int
+curve25519_donna(u8 *mypublic, const u8 *secret, const u8 *basepoint) {
   limb bp[10], x[10], z[11], zmone[10];
   uint8_t e[32];
   int i;
 
   for (i = 0; i < 32; ++i) e[i] = secret[i];
-//  e[0] &= 248;
-//  e[31] &= 127;
-//  e[31] |= 64;
+  e[0] &= 248;
+  e[31] &= 127;
+  e[31] |= 64;
 
   fexpand(bp, basepoint);
   cmult(x, z, e, bp);
